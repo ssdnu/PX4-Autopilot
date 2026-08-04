@@ -1,0 +1,162 @@
+name: Build & Release FTS PX4 Firmware
+
+# 사용법:
+#   1. 이 파일을 ssdnu/PX4-Autopilot 레포의 .github/workflows/build-release.yml 로 저장
+#   2. Actions 탭에서 수동 실행 (workflow_dispatch) 하거나
+#      px4-fts 태그를 push 하면 자동 실행됨
+#   3. 완료되면 Releases > px4-fts 에 아래 파일들이 올라감 (재실행 시 기존 파일 전부 교체)
+#        v5-px4.px4
+#        v5-bootloader.bin
+#        v7-px4.px4
+#        v7-bootloader.bin
+#
+#   매뉴얼 PDF에는 releases/latest 링크를 넣으면 됨:
+#     https://github.com/ssdnu/PX4-Autopilot/releases/latest
+#
+#   참고: 정확한 PX4 베이스 버전은 확인되지 않음 (v1.16.2 ~ v1.17.0 사이 개발 스냅샷으로 추정).
+#         정확한 버전을 알게 되면 RELEASE_TAG / name 을 업데이트할 것.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "px4-fts"
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: px4-fts
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/px4/px4-dev:v1.16.2-5-g477eb010fe
+      options: --user root
+
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - { hwdef: fts_fc-v5, prefix: v5 }
+          - { hwdef: fts_fc-v7, prefix: v7 }
+
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Fix git safe.directory
+        run: git config --global --add safe.directory '*'
+
+      - name: Build firmware
+        run: |
+          make ${{ matrix.board.hwdef }}_default
+
+      - name: Locate build output
+        id: locate
+        run: |
+          PX4FW=$(find build/${{ matrix.board.hwdef }}_default -maxdepth 1 -name "*.px4")
+          echo "px4_path=$PX4FW" >> "$GITHUB_OUTPUT"
+
+      - name: Rename output
+        run: |
+          mkdir -p out
+          cp "${{ steps.locate.outputs.px4_path }}" "out/${{ matrix.board.prefix }}-px4.px4"
+
+      - name: Upload build artifact (between jobs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.board.hwdef }}
+          path: out/*.px4
+          retention-days: 7
+
+  build-bootloader:
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/px4/px4-dev:v1.16.2-5-g477eb010fe
+      options: --user root
+
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - { hwdef: fts_fc-v5, prefix: v5 }
+          - { hwdef: fts_fc-v7, prefix: v7 }
+
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Fix git safe.directory
+        run: git config --global --add safe.directory '*'
+
+      - name: Build bootloader
+        run: |
+          make ${{ matrix.board.hwdef }}_bootloader
+
+      - name: Locate build output
+        id: locate
+        run: |
+          BIN=$(find build/${{ matrix.board.hwdef }}_bootloader -maxdepth 2 -name "*.bin" | head -1)
+          echo "bin_path=$BIN" >> "$GITHUB_OUTPUT"
+
+      - name: Rename output
+        run: |
+          mkdir -p out
+          cp "${{ steps.locate.outputs.bin_path }}" "out/${{ matrix.board.prefix }}-bootloader.bin"
+
+      - name: Upload build artifact (between jobs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootloader-${{ matrix.board.hwdef }}
+          path: out/*.bin
+          retention-days: 7
+
+  release:
+    needs: [build, build-bootloader]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout (for commit info)
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Flatten artifacts
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f \( -name "*.px4" -o -name "*.bin" \) -exec cp {} release-assets/ \;
+          ls -la release-assets
+
+      - name: Get short commit hash
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create / update release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.RELEASE_TAG }}
+          name: "PX4 release (FTS)"
+          body: |
+            FTS 커스텀 PX4 펌웨어 (fc-v5 / fc-v7)
+
+            - 소스 커밋: ${{ steps.vars.outputs.sha_short }}
+            - 빌드 일시: ${{ github.event.repository.updated_at }}
+            - 보드: fts_fc-v5, fts_fc-v7
+            - 정확한 PX4 베이스 버전 미확정 (v1.16.2 ~ v1.17.0 사이 개발 스냅샷으로 추정)
+
+            ※ 반드시 이 릴리스의 파일만 사용하십시오. 다른 출처의 펌웨어를 올리면 보드가 정상 동작하지 않을 수 있습니다.
+          artifacts: "release-assets/*"
+          allowUpdates: true
+          replacesArtifacts: true
+          removeArtifacts: true
+          makeLatest: true
