@@ -1,0 +1,13 @@
+{
+    "board_id": 2001,
+    "magic": "PX4FWv1",
+    "description": "Firmware for the FTS FC-V7 board",
+    "image": "",
+    "build_time": 0,
+    "summary": "FC-V7",
+    "version": "0.1",
+    "image_size": 0,
+    "image_maxsize": 1966080,
+    "git_identity": "",
+    "board_revision": 0
+}

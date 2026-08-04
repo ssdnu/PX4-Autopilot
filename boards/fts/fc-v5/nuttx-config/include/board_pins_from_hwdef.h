@@ -1,0 +1,32 @@
+/* Pin map extracted from ArduPilot hwdef.dat for manual merge into PX4/NuttX pin config. */
+
+/* USB */
+/* PA11 OTG_FS_DM, PA12 OTG_FS_DP */
+
+/* SPI1 internal sensors: PG11 SCK, PA6 MISO, PD7 MOSI */
+/* SPI2 FRAM: PI1 SCK, PI2 MISO, PI3 MOSI */
+/* SPI4 baro: PE2 SCK, PE13 MISO, PE6 MOSI */
+
+/* I2C order in ArduPilot: I2C3 external?, I2C1, I2C2, I2C4 */
+/* I2C1 PB8/PB9, I2C2 PF1/PF0, I2C3 PH7/PH8 pullup, I2C4 PF14/PF15 */
+
+/* UARTs */
+/* USART2 PD6 RX PD5 TX PD3 CTS PD4 RTS - TELEM1 */
+/* USART3 PD9 RX PD8 TX PD11 CTS PD12 RTS - TELEM2 */
+/* USART1 PB7 RX PB6 TX - GPS1 NODMA */
+/* UART4  PD0 RX PD1 TX - GPS2 NODMA */
+/* USART6 PG14 TX PG15 CTS PG8 RTS - TELEM3; RX PG9 disabled in hwdef */
+/* UART7  PF6 RX PE8 TX - DEBUG NODMA */
+
+/* CAN */
+/* CAN1 PI9 RX PH13 TX, silent PH2 */
+/* CAN2 PB12 RX PB13 TX, silent PH3 */
+
+/* PWM */
+/* PE14 TIM1_CH4, PA10 TIM1_CH3, PE11 TIM1_CH2, PE9 TIM1_CH1 */
+/* PD13 TIM4_CH2, PD14 TIM4_CH3, PH6 TIM12_CH1, PH9 TIM12_CH2 */
+/* PA5 TIM2_CH1, PB3 TIM2_CH2, PB11 TIM2_CH4 */
+/* RCIN PI5 TIM8_CH1 */
+
+/* SDMMC1 */
+/* PC8 D0, PC9 D1, PC10 D2, PC11 D3, PC12 CK, PD2 CMD */

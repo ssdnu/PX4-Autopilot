@@ -1,0 +1,28 @@
+#!/bin/sh
+# Board defaults for yourcompany_yourfc
+# Generated from ArduPilot hwdef.dat.
+
+# Serial mapping inferred from SERIAL_ORDER:
+# USB, TELEM1=USART2, TELEM2=USART3, GPS1=USART1, GPS2=UART4, TELEM3=USART6, DEBUG=UART7
+# PX4 serial parameter names may differ by release; verify with `param show SER_*`.
+
+# Battery scaling from hwdef:
+# HAL_BATT_VOLT_SCALE 18.0, HAL_BATT_CURR_SCALE 24.0
+param set-default BAT1_V_DIV 18.0
+param set-default BAT1_A_PER_V 24.0
+param set-default BAT2_V_DIV 18.0
+param set-default BAT2_A_PER_V 24.0
+
+# Increase logger buffer for FMUv5-class boards.
+param set-default LOGGER_BUF 16
+
+# CAN/UAVCAN enabled by default only if your PX4 release uses these legacy parameters.
+param set-default UAVCAN_ENABLE 1
+
+# Safety switch present: PE10 input, PE12 safety LED. Driver is enabled in default.cmake.
+
+# IMU rotations from hwdef:
+# ICM20689 ROTATION_NONE
+# ICM20649 ROTATION_NONE
+# BMI088 ROTATION_ROLL_180_YAW_90
+# PX4 normally handles this in driver start args above, not params.

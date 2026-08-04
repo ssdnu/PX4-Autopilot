@@ -1,0 +1,28 @@
+#!/bin/sh
+# fc-v5 sensor startup generated from original ArduPilot hwdef.dat.
+#
+# hwdef summary:
+#   SPI1: ICM20689, ICM20649, BMI088 gyro, BMI088 accel
+#   SPI4: MS5611
+#   I2C:  IST8310 external/internal at 0x0e, rotation ROTATION_ROLL_180_YAW_90
+#
+# PX4 bus drivers parse options before the command, so use:
+#   <driver> <options> start
+
+# Barometer: MS5611 on SPI4, CS PF10
+ms5611 -s start
+
+# IMUs on SPI1
+icm20689 -s -R 2 start # YAW_90
+icm20649 -s -R 2 start # YAW_90
+
+# BMI088 is split accel/gyro and needs -A and -G starts.
+# ArduPilot rotation: ROTATION_ROLL_180_YAW_90. PX4 rotation enum value 10 is commonly used for this.
+bmi088 -A -s -R 2 start
+bmi088 -G -s -R 2 start
+
+# Magnetometers: ArduPilot probes both external and internal IST8310 at 0x0e
+# with ROTATION_ROLL_180_YAW_90. Enable one at a time during bring-up if needed.
+#ist8310 -X -R 10 start
+ist8310 -I -b 3 -R 10 start
+ist8310 -X -b 1 -R 10 start
