@@ -6,9 +6,13 @@ name: Build & Release FTS PX4 Firmware
 #      px4-fts 태그를 push 하면 자동 실행됨
 #   3. 완료되면 Releases > px4-fts 에 아래 파일들이 올라감 (재실행 시 기존 파일 전부 교체)
 #        v5-px4.px4
-#        v5-bootloader.bin
 #        v7-px4.px4
 #        v7-bootloader.bin
+#
+#   V5 부트로더는 보류 상태: 이 PX4 버전은 STM32F7 부트로더 소스 자체가 없음
+#   (platforms/nuttx/src/bootloader/stm/stm32f7 폴더 없음 - 공식 PX4도 동일,
+#    공식 fmu-v5도 부트로더는 미리 빌드된 바이너리를 extras/ 에 넣어두는 방식).
+#   V5는 기존에 구워진 부트로더를 그대로 사용.
 #
 #   매뉴얼 PDF에는 releases/latest 링크를 넣으면 됨:
 #     https://github.com/ssdnu/PX4-Autopilot/releases/latest
@@ -84,7 +88,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
-          - { hwdef: fts_fc-v5, prefix: v5 }
+          # V5는 일단 제외 (STM32F7 부트로더 소스가 이 PX4 버전에 없음, 별도 처리 예정)
           - { hwdef: fts_fc-v7, prefix: v7 }
 
     steps:
@@ -151,7 +155,8 @@ jobs:
 
             - 소스 커밋: ${{ steps.vars.outputs.sha_short }}
             - 빌드 일시: ${{ github.event.repository.updated_at }}
-            - 보드: fts_fc-v5, fts_fc-v7
+            - 보드: fts_fc-v5 (펌웨어만), fts_fc-v7 (펌웨어+부트로더)
+            - V5 부트로더는 보류 상태 (기존에 구워진 부트로더 사용, 별도 배포 예정)
             - 정확한 PX4 베이스 버전 미확정 (v1.16.2 ~ v1.17.0 사이 개발 스냅샷으로 추정)
 
             ※ 반드시 이 릴리스의 파일만 사용하십시오. 다른 출처의 펌웨어를 올리면 보드가 정상 동작하지 않을 수 있습니다.
