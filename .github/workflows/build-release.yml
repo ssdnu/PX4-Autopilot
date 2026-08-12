@@ -12,8 +12,11 @@ name: Build & Release FTS PX4 Firmware
 #
 #   V5 부트로더 참고: 이 PX4 버전은 STM32F7 부트로더 소스 자체가 없어서
 #   (platforms/nuttx/src/bootloader/stm/stm32f7 폴더 없음 - 공식 PX4도 동일)
-#   CI에서 새로 빌드하지 않고, boards/fts/fc-v5/extras/fts_fc-v5_bootloader.bin
+#   CI에서 새로 빌드하지 않고, fts-bootloaders/fts_fc-v5_bootloader.bin
 #   (별도 PX4-Bootloader 프로젝트에서 미리 빌드해온 결과물)을 그대로 릴리스에 첨부함.
+#   주의: boards/<board>/extras/ 폴더에 넣으면 PX4 빌드가 그 파일을 ROMFS(펌웨어 내장
+#   파일시스템)에 자동으로 포함시키려다 실패함 (px_romfs_pruner.py 가 텍스트로만 읽으려 함).
+#   그래서 boards/ 트리 밖의 fts-bootloaders/ 에 둠.
 #
 #   매뉴얼 PDF에는 releases/latest 링크를 넣으면 됨:
 #     https://github.com/ssdnu/PX4-Autopilot/releases/latest
@@ -144,7 +147,7 @@ jobs:
       - name: Copy prebuilt V5 bootloader
         run: |
           mkdir -p out
-          cp boards/fts/fc-v5/extras/fts_fc-v5_bootloader.bin out/v5-bootloader.bin
+          cp fts-bootloaders/fts_fc-v5_bootloader.bin out/v5-bootloader.bin
 
       - name: Upload build artifact (between jobs)
         uses: actions/upload-artifact@v4
