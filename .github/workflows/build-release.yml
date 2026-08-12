@@ -48,6 +48,12 @@ jobs:
           - { hwdef: fts_fc-v7, prefix: v7 }
 
     steps:
+      - name: Fix CA certificates (container image has broken/missing CA bundle)
+        run: |
+          apt-get update -qq
+          apt-get install -y --reinstall ca-certificates
+          update-ca-certificates
+
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
@@ -92,6 +98,12 @@ jobs:
           - { hwdef: fts_fc-v7, prefix: v7 }
 
     steps:
+      - name: Fix CA certificates (container image has broken/missing CA bundle)
+        run: |
+          apt-get update -qq
+          apt-get install -y --reinstall ca-certificates
+          update-ca-certificates
+
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
